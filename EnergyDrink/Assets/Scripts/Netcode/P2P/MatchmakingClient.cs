@@ -502,14 +502,14 @@ public sealed class SteamMatchmakingClient : IDisposable, INonBlockingSocket<CSt
                 ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_ListenSocket,
                 (IntPtr)_listen.m_HSteamListenSocket,
                 ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                (IntPtr)(&iceEnable));
+                new IntPtr(&iceEnable));
 
             bool okSdr = SteamNetworkingUtils.SetConfigValue(
                 ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_P2P_Transport_SDR_Penalty,
                 ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_ListenSocket,
                 (IntPtr)_listen.m_HSteamListenSocket,
                 ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                (IntPtr)(&sdrPenalty));
+                new IntPtr(&sdrPenalty));
 
             Debug.Log($"[Matchmaking] SetConfigValue(listen): ICE_Enable={(okIce ? "OK" : "FAIL")} value={iceEnable}, SDR_Penalty={(okSdr ? "OK" : "FAIL")} value={sdrPenalty}");
         }
@@ -548,14 +548,14 @@ public sealed class SteamMatchmakingClient : IDisposable, INonBlockingSocket<CSt
                 ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Connection,
                 (IntPtr)_conn.m_HSteamNetConnection,
                 ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                &iceEnable);
+                new IntPtr(&iceEnable));
 
             bool okSdr = SteamNetworkingUtils.SetConfigValue(
                 ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_P2P_Transport_SDR_Penalty,
                 ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Connection,
                 (IntPtr)_conn.m_HSteamNetConnection,
                 ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                &sdrPenalty);
+                new IntPtr(&sdrPenalty));
 
             Debug.Log($"[Matchmaking] SetConfigValue(conn): ICE_Enable={(okIce ? "OK" : "FAIL")} value={iceEnable}, SDR_Penalty={(okSdr ? "OK" : "FAIL")} value={sdrPenalty}");
         }
