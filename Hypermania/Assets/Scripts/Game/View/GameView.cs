@@ -61,7 +61,6 @@ namespace Game.View
             {
                 interestPoints.Add((Vector2)state.Fighters[i].Position);
             }
-            DoCamera(interestPoints, config);
         }
 
         public void DeInit()
@@ -75,38 +74,6 @@ namespace Game.View
             }
             _fighters = null;
             _characters = null;
-        }
-
-        public void DoCamera(List<Vector2> interestPoints, GlobalConfig config)
-        {
-            const float PADDING = 0.5f;
-            const float ASPECT = 16f / 9;
-            const float MIN_ZOOM = 3f;
-            const float MAX_ZOOM = 8f;
-
-            if (interestPoints.Count == 0)
-            {
-                throw new InvalidOperationException("Camera needs at least one point of interest");
-            }
-            Vector2 min = Vector2.positiveInfinity;
-            Vector2 max = Vector2.negativeInfinity;
-            foreach (Vector2 pt in interestPoints)
-            {
-                min = Vector2.Min(min, pt);
-                max = Vector2.Max(max, pt);
-            }
-            Vector2 center = (min + max) / 2f;
-
-            float totalWidth = max.x - min.x + PADDING * 2;
-            float totalHeight = max.y - min.y + PADDING * 2;
-            float horizAspect = totalWidth / (2 * ASPECT);
-            float vertAspect = totalHeight / 2;
-            Camera.main.orthographicSize +=
-                (Mathf.Clamp(Mathf.Max(horizAspect, vertAspect), MIN_ZOOM, MAX_ZOOM) - Camera.main.orthographicSize)
-                * 0.1f;
-            Camera.main.transform.position +=
-                (new Vector3(center.x, center.y, Camera.main.transform.position.z) - Camera.main.transform.position)
-                * 0.1f;
         }
     }
 }
