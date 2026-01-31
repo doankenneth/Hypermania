@@ -37,23 +37,6 @@ namespace Game.Sim
             _count = 0;
         }
 
-        // For debugging purposes only. Remove in the final product.
-        public InputFlags[] getInputs()
-        {
-            InputFlags[] inputs = new InputFlags[_buffer.Length];
-            for (int i = 0; i < inputs.Length; i++)
-            {
-                inputs[i] = _buffer[i].Flags;
-            }
-            return inputs;
-        }
-
-        // For debugging purposes only. Remove in the final product.
-        public InputFlags getMostRecent()
-        {
-            return _buffer[(_next - 1 + _buffer.Length) % _buffer.Length].Flags;
-        }
-
         public void PushInput(GameInput input)
         {
             _buffer[_next] = input;
