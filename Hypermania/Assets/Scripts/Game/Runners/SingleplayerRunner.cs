@@ -52,6 +52,7 @@ namespace Game.Runners
                 return;
             }
 
+            _inputBuffer.Clear();
             _inputBuffer.Saturate();
 
             float fpsDelta = 1.0f / GameManager.TPS;
@@ -71,7 +72,7 @@ namespace Game.Runners
                 return;
             }
 
-            _session.AddLocalInput(new PlayerHandle(0), _inputBuffer.Consume());
+            _session.AddLocalInput(new PlayerHandle(0), _inputBuffer.Poll());
             _session.AddLocalInput(new PlayerHandle(1), new GameInput(InputFlags.None));
             List<RollbackRequest<GameState, GameInput>> requests = _session.AdvanceFrame();
             foreach (RollbackRequest<GameState, GameInput> request in requests)
