@@ -44,11 +44,14 @@ namespace Game
                 input |= InputFlags.Mania6;
         }
 
-        public GameInput Consume()
+        public void Clear()
         {
-            GameInput res = new GameInput(input);
             input = InputFlags.None;
-            return res;
+        }
+
+        public GameInput Poll()
+        {
+            return new GameInput(input);
         }
     }
 }

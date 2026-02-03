@@ -16,50 +16,24 @@ namespace Game.Sim
     {
         Fighting,
         Mania,
+        Starting,
     }
 
     [MemoryPackable]
     public partial class GameState : IState<GameState>
     {
         /// <summary>
-        /// Physics context used to find collisions between boxes.
+        /// Physics context used to resolve collisions between boxes.
         /// </summary>
         [ThreadStatic]
-        private static Physics<BoxProps> _physics;
-        private static Physics<BoxProps> Physics
+        private static PhysicsContext<BoxProps> _physicsCtx;
+        private static PhysicsContext<BoxProps> PhysicsCtx
         {
             get
             {
-                if (_physics == null)
-                    _physics = new Physics<BoxProps>(MAX_COLLIDERS);
-                return _physics;
-            }
-        }
-
-        /// <summary>
-        /// Cached list used to sort and process collisions, cleared at the end of every frame
-        /// </summary>
-        [ThreadStatic]
-        private static List<Physics<BoxProps>.Collision> _collisions;
-        private static List<Physics<BoxProps>.Collision> Collisions
-        {
-            get
-            {
-                if (_collisions == null)
-                    _collisions = new List<Physics<BoxProps>.Collision>(MAX_COLLIDERS);
-                return _collisions;
-            }
-        }
-
-        [ThreadStatic]
-        private static Dictionary<(int, int), Physics<BoxProps>.Collision> _hurtHitCollisions;
-        private static Dictionary<(int, int), Physics<BoxProps>.Collision> HurtHitCollisions
-        {
-            get
-            {
-                if (_hurtHitCollisions == null)
-                    _hurtHitCollisions = new Dictionary<(int, int), Physics<BoxProps>.Collision>(MAX_COLLIDERS);
-                return _hurtHitCollisions;
+                if (_physicsCtx == null)
+                    _physicsCtx = new PhysicsContext<BoxProps>(MAX_COLLIDERS);
+                return _physicsCtx;
             }
         }
 
@@ -89,7 +63,7 @@ namespace Game.Sim
             {
                 sfloat xPos = i - ((sfloat)characters.Length - 1) / 2;
                 FighterFacing facing = xPos > 0 ? FighterFacing.Left : FighterFacing.Right;
-                state.Fighters[i] = FighterState.Create(new SVector2(xPos, sfloat.Zero), facing, characters[i]);
+                state.Fighters[i] = FighterState.Create(new SVector2(xPos, sfloat.Zero), facing, characters[i], 3);
                 state.Manias[i] = ManiaState.Create(
                     new ManiaConfig
                     {
@@ -113,6 +87,19 @@ namespace Game.Sim
                 throw new InvalidOperationException("invalid inputs and characters to advance game state with");
             }
             Frame += 1;
+
+            // Reset positions and state for a new round.
+            if (GameMode == GameMode.Starting)
+            {
+                for (int i = 0; i < Fighters.Length; i++)
+                {
+                    Fighters[i].Health = characters[i].Health;
+                    sfloat xPos = i - ((sfloat)characters.Length - 1) / 2;
+                    FighterFacing facing = xPos > 0 ? FighterFacing.Left : FighterFacing.Right;
+                    Fighters[i].RoundReset(new SVector2(xPos, sfloat.Zero), facing, characters[i]);
+                }
+                GameMode = GameMode.Fighting;
+            }
 
             // Push the current input into the input history, to read for buffering.
             for (int i = 0; i < Fighters.Length; i++)
@@ -157,6 +144,26 @@ namespace Game.Sim
 
             DoCollisionStep(characters, config);
 
+            for (int i = 0; i < Fighters.Length; i++)
+            {
+                if (Fighters[i].Health <= 0)
+                {
+                    Fighters[i].Lives--;
+                    if (Fighters[i].Lives <= 0)
+                    {
+                        return;
+                    }
+
+                    GameMode = GameMode.Starting;
+                    // Ensure that if the player died to a mania attack it ends immediately
+                    for (int j = 0; j < Manias.Length; j++)
+                    {
+                        Manias[j].End();
+                    }
+                    return;
+                }
+            }
+
             // Apply any velocities set during movement or through knockback.
             for (int i = 0; i < Fighters.Length; i++)
             {
@@ -178,6 +185,18 @@ namespace Game.Sim
             {
                 Fighters[i].ApplyMovementState(Frame, config);
             }
+        }
+
+        public bool FightersDead()
+        {
+            for (int i = 0; i < Fighters.Length; i++)
+            {
+                if (Fighters[i].Lives <= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void DoManiaStep((GameInput input, InputStatus status)[] inputs)
@@ -206,12 +225,12 @@ namespace Game.Sim
             // collisions. It is our job to then handle them.
             for (int i = 0; i < Fighters.Length; i++)
             {
-                Fighters[i].AddBoxes(Frame, characters[i], Physics, i);
+                Fighters[i].AddBoxes(Frame, characters[i], PhysicsCtx.Physics, i);
             }
 
             // AdvanceProjectiles();
 
-            Physics.GetCollisions(Collisions);
+            PhysicsCtx.Physics.GetCollisions(PhysicsCtx.Collisions);
 
             // First, solve collisions that would result in player damage. There can only be one such collision per
             // (A, B) ordered pair, where A and B are players, projectiles, or other game objects. For now, we take the
@@ -225,7 +244,7 @@ namespace Game.Sim
             // colliding. If they are, push them apart.
             Physics<BoxProps>.Collision? clank = null;
             Physics<BoxProps>.Collision? collide = null;
-            foreach (var c in Collisions)
+            foreach (var c in PhysicsCtx.Collisions)
             {
                 (int, int) hitPair = (-1, -1);
                 if (c.BoxA.Data.Kind == HitboxKind.Hitbox && c.BoxB.Data.Kind == HitboxKind.Hurtbox)
@@ -247,13 +266,13 @@ namespace Game.Sim
                 // TODO: sort by priority or something
                 if (hitPair != (-1, -1))
                 {
-                    HurtHitCollisions[hitPair] = c;
+                    PhysicsCtx.HurtHitCollisions[hitPair] = c;
                 }
             }
 
-            if (HurtHitCollisions.Count > 0)
+            if (PhysicsCtx.HurtHitCollisions.Count > 0)
             {
-                foreach ((var owners, var collision) in HurtHitCollisions)
+                foreach ((var owners, var collision) in PhysicsCtx.HurtHitCollisions)
                 {
                     //owners[0] hits owners[1]
                     HandleCollision(collision, config);
@@ -262,7 +281,7 @@ namespace Game.Sim
                     //to start a rhythm combo, we must sure that the move was not traded
                     if (
                         attackerBox.Data.StartsRhythmCombo
-                        && !HurtHitCollisions.ContainsKey((owners.Item2, owners.Item1))
+                        && !PhysicsCtx.HurtHitCollisions.ContainsKey((owners.Item2, owners.Item1))
                         && GameMode == GameMode.Fighting
                     )
                     {
@@ -287,6 +306,7 @@ namespace Game.Sim
                         }
                         Manias[owners.Item1].Enable(stFrame + Mathsf.RoundToInt(ticksPerBeat / 2 * 16));
                         GameMode = GameMode.Mania;
+                        // TODO: show mania screen only after the maximum rollback frames to ensure no visual artifacting
                     }
                 }
             }
@@ -300,9 +320,7 @@ namespace Game.Sim
             }
 
             // Clear the physics context for the next frame, which will then re-add boxes and solve for collisions again
-            Physics.Clear();
-            Collisions.Clear();
-            HurtHitCollisions.Clear();
+            PhysicsCtx.Clear();
         }
 
         private void HandleCollision(Physics<BoxProps>.Collision c, GlobalConfig config)
