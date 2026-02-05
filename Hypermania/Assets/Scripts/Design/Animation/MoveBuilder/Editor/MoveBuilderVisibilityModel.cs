@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Design.Animation.Editors
+namespace Design.Animation.MoveBuilder.Editors
 {
     public sealed class MoveBuilderVisibilityModel
     {

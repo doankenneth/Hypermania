@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Design.Animation.Editors
+namespace Design.Animation.MoveBuilder.Editors
 {
     public sealed class MoveBuilderVisibilityTreeView : TreeView
     {

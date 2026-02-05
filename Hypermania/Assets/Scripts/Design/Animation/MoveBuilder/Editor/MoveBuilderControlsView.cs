@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using Utils.SoftFloat;
 
-namespace Design.Animation.Editors
+namespace Design.Animation.MoveBuilder.Editors
 {
     public sealed class MoveBuilderControlsView
     {

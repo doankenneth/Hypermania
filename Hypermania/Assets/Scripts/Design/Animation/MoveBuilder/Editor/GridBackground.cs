@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Design.Animation.Editors
+namespace Design.Animation.MoveBuilder.Editors
 {
     public static class GridBackground
     {
