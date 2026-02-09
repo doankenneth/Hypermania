@@ -19,6 +19,9 @@ namespace Game.View
         private CharacterConfig[] _characters;
 
         [SerializeField]
+        private BurstBarView[] _burstBars;
+
+        [SerializeField]
         private FighterIndicatorManager _fighterIndicatorManager;
 
         [SerializeField]
@@ -39,6 +42,9 @@ namespace Game.View
         [SerializeField]
         private InfoOverlayView _overlayView;
 
+        [SerializeField]
+        private RoundTimerView _roundTimerView;
+
         public void OnValidate()
         {
             if (_healthbars == null)
@@ -58,6 +64,21 @@ namespace Game.View
                 if (_healthbars[i] == null)
                 {
                     throw new InvalidOperationException("Healthbars must be assigned to the game view!");
+                }
+            }
+            if (_burstBars == null)
+            {
+                throw new InvalidOperationException("BurstBars should exist");
+            }
+            if (_burstBars.Length != 2)
+            {
+                throw new InvalidOperationException("BurstBars length should be 2");
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                if (_burstBars[i] == null)
+                {
+                    throw new InvalidOperationException("BurstBars must be assigned to the game view!");
                 }
             }
         }
@@ -87,6 +108,7 @@ namespace Game.View
 
                 _manias[i].Init();
                 _healthbars[i].SetMaxHealth((float)characters[i].Health);
+                _burstBars[i].SetMaxBurst((float)characters[i].BurstMax);
             }
             _conductor.Init();
         }
@@ -113,6 +135,7 @@ namespace Game.View
             for (int i = 0; i < _characters.Length; i++)
             {
                 _healthbars[i].SetHealth((int)state.Fighters[i].Health);
+                _burstBars[i].SetBurst((int)state.Fighters[i].Burst);
             }
 
             _cameraControl.UpdateCamera(interestPoints, _zoom);
@@ -124,6 +147,7 @@ namespace Game.View
                 _comboViews[i].SetComboCount(combo);
             }
             _overlayView.Render(overlayDetails);
+            _roundTimerView.DisplayRoundTimer(state.Frame, state.RoundEnd);
         }
 
         public void DeInit()
