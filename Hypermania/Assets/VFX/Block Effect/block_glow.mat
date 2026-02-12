@@ -95,6 +95,7 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
+    - _DisplaceFrequency: 2
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -111,9 +112,10 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BackColor: {r: 2, g: 0, b: 2, a: 1}
+    - _BackColor: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 4, g: 0.14339566, b: 0.14339566, a: 1}
+    - _FaceDisplacement: {r: 1, g: 1, b: 0, a: 0}
     - _FrontColor: {r: 0, g: 0.36362284, b: 1.4980392, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
