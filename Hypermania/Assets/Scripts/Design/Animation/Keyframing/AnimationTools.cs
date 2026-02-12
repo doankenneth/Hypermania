@@ -68,7 +68,7 @@ namespace Design.Animation.Keyframing
                     var sr = t.GetComponent<SpriteRenderer>();
                     if (sr != null)
                     {
-                        AddDiscreteIntKeyAtTime(
+                        AddFloatKeyAtTime(
                             clip: _clip,
                             animRoot: animRoot,
                             componentType: typeof(SpriteRenderer),
@@ -82,7 +82,7 @@ namespace Design.Animation.Keyframing
                     var resolver = t.GetComponent<SpriteResolver>();
                     if (resolver != null)
                     {
-                        int hash = ReadSpriteResolverSpriteHash(resolver);
+                        float hash = ReadSpriteResolverSpriteHash(resolver);
                         AddDiscreteIntKeyAtTime(
                             clip: _clip,
                             animRoot: animRoot,
@@ -218,17 +218,28 @@ namespace Design.Animation.Keyframing
             AssetDatabase.SaveAssets();
         }
 
-        private static int ReadSpriteResolverSpriteHash(SpriteResolver resolver)
+        private static float ReadSpriteResolverSpriteHash(SpriteResolver resolver)
         {
             if (resolver == null)
                 return 0;
+            //holy hack
 
-            SerializedObject so = new SerializedObject(resolver);
-            SerializedProperty p = so.FindProperty("m_SpriteHash");
-            if (p != null)
-                return p.intValue;
-
-            throw new InvalidOperationException("SpriteResolver does not contain serialized field 'm_SpriteHash'.");
+            unsafe float ConvertDiscreteIntToFloat(int f)
+            {
+                int* ptr = &f;
+                float* ptr2 = (float*)ptr;
+                return *ptr2;
+            }
+            int hash = Bit30Hash_GetStringHash(resolver.GetCategory() + "_" + resolver.GetLabel());
+            int Bit30Hash_GetStringHash(string value)
+            {
+                return PreserveFirst30Bits(Animator.StringToHash(value));
+            }
+            int PreserveFirst30Bits(int input)
+            {
+                return input & 0x3FFFFFFF;
+            }
+            return ConvertDiscreteIntToFloat(hash);
         }
 
         private static Transform FindChildByName(Transform root, string name)
@@ -318,31 +329,17 @@ namespace Design.Animation.Keyframing
             float value
         )
         {
-            if (clip == null || animRoot == null || targetTransform == null)
-                return;
-
             string path = AnimationUtility.CalculateTransformPath(targetTransform, animRoot);
-
-            var binding = new EditorCurveBinding
-            {
-                type = componentType,
-                path = path,
-                propertyName = propertyName,
-            };
-
+            var binding = EditorCurveBinding.FloatCurve(path, componentType, propertyName);
             var curve = AnimationUtility.GetEditorCurve(clip, binding) ?? new AnimationCurve();
 
             int idx = FindKeyIndexAtTime(curve.keys, time);
             var k = new Keyframe(time, value);
 
             if (idx >= 0)
-            {
                 curve.MoveKey(idx, k);
-            }
             else
-            {
                 curve.AddKey(k);
-            }
 
             AnimationUtility.SetEditorCurve(clip, binding, curve);
         }
@@ -354,13 +351,11 @@ namespace Design.Animation.Keyframing
             Type componentType,
             string propertyName,
             float time,
-            int value
+            float value
         )
         {
             string path = AnimationUtility.CalculateTransformPath(targetTransform, animRoot);
-
             var binding = EditorCurveBinding.DiscreteCurve(path, componentType, propertyName);
-
             var curve = AnimationUtility.GetEditorCurve(clip, binding) ?? new AnimationCurve();
 
             var k = new Keyframe(time, value)
