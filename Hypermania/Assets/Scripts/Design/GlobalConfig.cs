@@ -14,6 +14,9 @@ namespace Design
         public int ClankTicks = 30;
 
         [SerializeField]
+        private AudioConfig AudioConfig;
+
+        [SerializeField]
         private List<CharacterConfig> _configs;
 
         public CharacterConfig Get(Character character)

@@ -78,6 +78,8 @@ namespace Game.Sim
         /// </summary>
         /// <param name="characterConfigs">Character configs to use</param>
         /// <returns>The created GameState</returns>
+        /// 
+        private AudioConfig audio;
         public static GameState Create(CharacterConfig[] characters)
         {
             GameState state = new GameState();
@@ -85,6 +87,7 @@ namespace Game.Sim
             state.Fighters = new FighterState[characters.Length];
             state.Manias = new ManiaState[characters.Length];
             state.GameMode = GameMode.Fighting;
+            state.audioConfig = config.AudioConfig
             for (int i = 0; i < characters.Length; i++)
             {
                 sfloat xPos = i - ((sfloat)characters.Length - 1) / 2;
@@ -268,7 +271,7 @@ namespace Game.Sim
                     {
                         // TODO: fix me, 30.72 is hardcoded ticks/beat
                         // make the start frame always be on a multiple of 4 beats starting from 0
-                        sfloat ticksPerBeat = (sfloat)30.72;
+                        int ticksPerBeat = audio.FramesPerQuarterNote;
                         int barInterval = Mathsf.RoundToInt(ticksPerBeat * 4);
                         Frame baseSt = Frame + 10;
                         Frame stFrame = baseSt - baseSt.No % barInterval + barInterval;
