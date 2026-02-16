@@ -1,49 +1,58 @@
 using System;
+using Design;
 using Game.Sim;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Utils.EnumArray;
 
 namespace Game
 {
     public class InputBuffer
     {
+        private ControlsConfig _controlsConfig;
+        private EnumArray<InputFlags, Binding> _controlScheme;
+
+        /**
+         * Base InputBuffer Constructor
+         *
+         * Constructs an InputBuffer to accept user input
+         *
+         * @param config - The Scriptable ControlsConfig Object to Reference
+         *
+         */
+        public InputBuffer(ControlsConfig config)
+        {
+            _controlsConfig = config;
+            _controlScheme = _controlsConfig.GetControlScheme();
+        }
+
         InputFlags input = InputFlags.None;
 
         public void Saturate()
         {
-            // Movement
-            if (Keyboard.current.aKey.isPressed)
-                input |= InputFlags.Left;
-            if (Keyboard.current.dKey.isPressed)
-                input |= InputFlags.Right;
-            if (Keyboard.current.wKey.isPressed)
-                input |= InputFlags.Up;
-            if (Keyboard.current.sKey.isPressed)
-                input |= InputFlags.Down;
+            foreach (InputFlags flag in Enum.GetValues(typeof(InputFlags)))
+            {
+                if (flag == InputFlags.None)
+                {
+                    continue; // Skips the None InputFlag (Does Not Have a Key Press)
+                }
 
-            // Attacks
-            if (Keyboard.current.jKey.isPressed)
-                input |= InputFlags.LightAttack;
-            if (Keyboard.current.kKey.isPressed)
-                input |= InputFlags.MediumAttack;
-            if (Keyboard.current.lKey.isPressed)
-                input |= InputFlags.HeavyAttack;
-            if (Keyboard.current.oKey.isPressed)
-                input |= InputFlags.Burst;
-
-            // Mania Keys
-            if (Keyboard.current.aKey.isPressed)
-                input |= InputFlags.Mania5;
-            if (Keyboard.current.sKey.isPressed)
-                input |= InputFlags.Mania3;
-            if (Keyboard.current.dKey.isPressed)
-                input |= InputFlags.Mania1;
-            if (Keyboard.current.jKey.isPressed)
-                input |= InputFlags.Mania2;
-            if (Keyboard.current.kKey.isPressed)
-                input |= InputFlags.Mania4;
-            if (Keyboard.current.lKey.isPressed)
-                input |= InputFlags.Mania6;
+                // Checks if either the primary or alt button set in config is pressed
+                // Ignores keys set to none
+                if (
+                    (
+                        _controlScheme[flag].GetPrimaryKey() != Key.None
+                        && Keyboard.current[_controlScheme[flag].GetPrimaryKey()].isPressed
+                    )
+                    || (
+                        _controlScheme[flag].GetAltKey() != Key.None
+                        && Keyboard.current[_controlScheme[flag].GetAltKey()].isPressed
+                    )
+                )
+                {
+                    input |= flag;
+                }
+            }
         }
 
         public void Clear()
