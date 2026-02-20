@@ -80,10 +80,21 @@ namespace Design.Animation
         public static bool operator !=(BoxData left, BoxData right) => !left.Equals(right);
     }
 
+    public enum FrameType
+    {
+        Neutral,
+        Startup,
+        Active,
+        Recovery,
+        Hitstun,
+        Blockstun,
+    }
+
     [Serializable]
     public class FrameData
     {
         public List<BoxData> Boxes = new List<BoxData>();
+        public FrameType FrameType;
 
         public FrameData Clone()
         {
@@ -94,6 +105,7 @@ namespace Design.Animation
             else
                 copy.Boxes = new List<BoxData>();
 
+            copy.FrameType = FrameType;
             return copy;
         }
 
@@ -102,6 +114,7 @@ namespace Design.Animation
             Boxes.Clear();
             if (other?.Boxes != null)
                 Boxes.AddRange(other.Boxes);
+            FrameType = other.FrameType;
         }
 
         public override int GetHashCode()
@@ -112,6 +125,7 @@ namespace Design.Animation
             {
                 hc.Add(Boxes[j]);
             }
+            hc.Add(FrameType);
             return hc.ToHashCode();
         }
     }
