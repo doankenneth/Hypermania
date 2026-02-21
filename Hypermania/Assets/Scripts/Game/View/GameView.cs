@@ -39,6 +39,7 @@ namespace Game.View
             public RoundTimerView RoundTimerView;
             public SfxManager SfxManager;
             public VfxManager VfxManager;
+            public FrameDataOverlay FrameDataOverlay;
         }
 
         public FighterView[] Fighters => _fighters;
@@ -130,6 +131,7 @@ namespace Game.View
                 _params.VfxManager.InvalidateAndConsume(_rollbackStart, state.Frame);
                 _rollbackStart = Frame.NullFrame;
             }
+            _params.FrameDataOverlay.AddFrameData(state, _characters, config.Audio);
         }
 
         public void RollbackRender(in GameState state)
