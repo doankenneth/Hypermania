@@ -39,14 +39,16 @@ namespace Game.View.Mania
         public ManiaViewConfig Config;
         private Dictionary<int, GameObject> _activeNotes;
         private Frame _rollbackStart;
-        private GameView _view;
+        // private GameView _view;
+
+        private SfxManager sfxManager; 
+        private VfxManager vfxManager;
 
         public void Init()
         {
             _activeNotes = new Dictionary<int, GameObject>();
             gameObject.SetActive(false);
             _rollbackStart = Frame.NullFrame;
-            _view = (GameView) GameObject.Find("GameView").GetComponent("GameView");
         }
 
         public void DeInit()
@@ -74,24 +76,35 @@ namespace Game.View.Mania
 
         private void DoViewEvents(in GameState state)
         {
-            // //TODO: figure out how to get reference to sfxmanager in gameview
-            // //check how to compare if current value in ManiaEvents is equal to missevent, hitevent, etc
-            // // so it would go smth like if event = miss, else if event = hit, do some sfx event
-            // for (int i = 0; i < state.ManiaEvents.Count; i++)
-            // {
-            //     ManiaEvent currentEvent = state.ManiaEvents.Get(0);
-            //     if (state.ManiaEvents[i] == ManiaEvent.MissEvent)
-            //     {
-            //         _view.SfxManager.AddDesired(
-            //             new ViewEvent<SfxEvent>
-            //             {
-            //                 Event = new SfxEvent { Kind = SfxKind.MediumPunch },
-            //                 StartFrame = state.SimFrame,
-            //                 Hash = i,
-            //             }
-            //         );
-            //     }
-            // }
+            //TODO: figure out how to get reference to sfxmanager in gameview
+            //check how to compare if current value in ManiaEvents is equal to missevent, hitevent, etc
+            // so it would go smth like if event = miss, else if event = hit, do some sfx event
+            for (int i = 0; i < state.ManiaEvents.Count; i++)
+            {
+                
+                if (state.ManiaEvents[i].Kind == ManiaEventKind.Hit)
+                {
+                    sfxManager.AddDesired(
+                        new ViewEvent<SfxEvent>
+                        {
+                            Event = new SfxEvent { Kind = SfxKind.comboGood },
+                            StartFrame = state.SimFrame,
+                            Hash = i,
+                        }
+                    );
+                }
+                else if (state.ManiaEvents[i].Kind == ManiaEventKind.Missed) {
+                    sfxManager.AddDesired(
+                        new ViewEvent<SfxEvent>
+                        {
+                            Event = new SfxEvent { Kind = SfxKind.comboMiss },
+                            StartFrame = state.SimFrame,
+                            Hash = i,
+                        }
+                    );
+                }
+            }
+            // state.ManiaEvents.Clear(); 
         }
 
         public void Render(Frame frame, in ManiaState state)
