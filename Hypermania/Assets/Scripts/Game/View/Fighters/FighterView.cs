@@ -93,7 +93,11 @@ namespace Game.View.Fighters
                 );
             }
             if (
-                (state.State == CharacterState.Hit || state.State == CharacterState.Knockdown)
+                (
+                    state.State == CharacterState.Hit
+                    || state.State == CharacterState.Knockdown
+                    || state.State == CharacterState.Death
+                )
                 && simFrame == state.StateStart
             )
             {
