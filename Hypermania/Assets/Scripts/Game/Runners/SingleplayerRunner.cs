@@ -52,8 +52,11 @@ namespace Game.Runners
                 return;
             }
 
-            _inputBuffer.Clear();
-            _inputBuffer.Saturate();
+            _inputBufferP1.Clear();
+            _inputBufferP1.Saturate();
+
+            _inputBufferP2.Clear();
+            _inputBufferP2.Saturate();
 
             float fpsDelta = 1.0f / GameManager.TPS;
             _time += deltaTime;
@@ -72,8 +75,8 @@ namespace Game.Runners
                 return;
             }
 
-            _session.AddLocalInput(new PlayerHandle(0), _inputBuffer.Poll());
-            _session.AddLocalInput(new PlayerHandle(1), GameInput.None);
+            _session.AddLocalInput(new PlayerHandle(0), _inputBufferP1.Poll());
+            _session.AddLocalInput(new PlayerHandle(1), _inputBufferP2.Poll());
 
             List<RollbackRequest<GameState, GameInput>> requests = _session.AdvanceFrame();
             foreach (RollbackRequest<GameState, GameInput> request in requests)

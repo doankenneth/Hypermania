@@ -34,7 +34,8 @@ namespace Game.Runners
         /// The characters of each player. _characters[i] should represent the chararcter being played by handle i. If
         /// you derive from this class, it must be initialized on Init();
         /// </summary>
-        protected InputBuffer _inputBuffer;
+        protected InputBuffer _inputBufferP1;
+        protected InputBuffer _inputBufferP2;
         protected bool _initialized;
         protected float _time;
 
@@ -51,7 +52,8 @@ namespace Game.Runners
             _view.Init(_options);
             if (_controlsConfig == null)
                 _controlsConfig = ScriptableObject.CreateInstance<ControlsConfig>();
-            _inputBuffer = new InputBuffer(_controlsConfig);
+            _inputBufferP1 = new InputBuffer(_controlsConfig, GameObject.Find("GameManager").GetComponent<JoinOnInput>().GetPlayerInputDevice(1));
+            _inputBufferP2 = new InputBuffer(_controlsConfig, GameObject.Find("GameManager").GetComponent<JoinOnInput>().GetPlayerInputDevice(2));
             _time = 0;
             _initialized = true;
         }
@@ -62,7 +64,8 @@ namespace Game.Runners
         {
             _initialized = false;
             _time = 0;
-            _inputBuffer = null;
+            _inputBufferP1 = null;
+            _inputBufferP2 = null;
             _view.DeInit();
             _curState = null;
         }

@@ -19,11 +19,11 @@ namespace Game.Runners
             {
                 return;
             }
-            _inputBuffer.Saturate();
+            _inputBufferP1.Saturate();
             if (Keyboard.current[Key.RightArrow].wasPressedThisFrame)
             {
                 GameLoop();
-                _inputBuffer.Clear();
+                _inputBufferP1.Clear();
             }
             if (Keyboard.current[Key.RightArrow].isPressed)
             {
@@ -31,7 +31,7 @@ namespace Game.Runners
                 if (_curHoldS >= _holdS)
                 {
                     GameLoop();
-                    _inputBuffer.Clear();
+                    _inputBufferP1.Clear();
                 }
             }
             else

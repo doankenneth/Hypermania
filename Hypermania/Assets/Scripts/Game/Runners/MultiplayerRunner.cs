@@ -72,8 +72,8 @@ namespace Game.Runners
                 return;
             }
 
-            _inputBuffer.Clear();
-            _inputBuffer.Saturate();
+            _inputBufferP1.Clear();
+            _inputBufferP1.Saturate();
 
             _session.PollRemoteClients();
 
@@ -118,7 +118,7 @@ namespace Game.Runners
                 return;
             }
 
-            _session.AddLocalInput(_myHandle, _inputBuffer.Poll());
+            _session.AddLocalInput(_myHandle, _inputBufferP1.Poll());
 
             List<RollbackRequest<GameState, GameInput>> requests = _session.AdvanceFrame();
             foreach (RollbackRequest<GameState, GameInput> request in requests)

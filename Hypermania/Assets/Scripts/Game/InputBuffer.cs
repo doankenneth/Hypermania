@@ -1,6 +1,7 @@
 using System;
 using Design.Configs;
 using Game.Sim;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using Utils.EnumArray;
@@ -10,9 +11,8 @@ namespace Game
     public class InputBuffer
     {
         private EnumArray<InputFlags, Binding> _controlScheme;
-        private EnumArray<InputFlags, Binding> _p2controlScheme;
-        private Boolean _isControllerInput;
-
+        [SerializeField]
+        private InputDevice _inputDevice;
         /**
          * Base InputBuffer Constructor
          *
@@ -21,10 +21,11 @@ namespace Game
          * @param config - The Scriptable ControlsConfig Object to Reference
          *
          */
-        public InputBuffer(ControlsConfig config)
+        public InputBuffer(ControlsConfig config, InputDevice inputDevice)
         {
-            _controlScheme = config.GetControlScheme();
-            _isControllerInput = config.IsControllerInput();
+            _controlScheme = config.GetControlSchemeP1();
+
+            _inputDevice = inputDevice;
 
         }
 
@@ -37,27 +38,30 @@ namespace Game
 
         public void Saturate()
         {
+            if (_inputDevice == null) return;
+
             foreach (InputFlags flag in Enum.GetValues(typeof(InputFlags)))
             {
                 if (flag == InputFlags.None)
                 {
                     continue; // Skips the None InputFlag (Does Not Have a Key Press)
                 }
-                if (_isControllerInput)
+                if (_inputDevice is Keyboard)
                 {
                     if (
                         (
-                            _controlScheme[flag].GetPrimaryGamepadButton() != GamepadButtons.None
-                            && Gamepad.current[(GamepadButton)(_controlScheme[flag].GetPrimaryGamepadButton())].isPressed
+                            _controlScheme[flag].GetPrimaryKey() != Key.None
+                            && ((Keyboard)_inputDevice)[_controlScheme[flag].GetPrimaryKey()].isPressed
                         )
                         || (
-                            _controlScheme[flag].GetAltGamepadButton() != GamepadButtons.None
-                            && Gamepad.current[(GamepadButton)(_controlScheme[flag].GetAltGamepadButton())].isPressed
+                            _controlScheme[flag].GetAltKey() != Key.None
+                            && ((Keyboard)_inputDevice)[_controlScheme[flag].GetAltKey()].isPressed
                         )
                     )
                     {
                         _input |= flag;
                     }
+
                 }
                 else
                 {
@@ -65,12 +69,12 @@ namespace Game
                     // Ignores keys set to none
                     if (
                         (
-                            _controlScheme[flag].GetPrimaryKey() != Key.None
-                            && Keyboard.current[_controlScheme[flag].GetPrimaryKey()].isPressed
+                            _controlScheme[flag].GetPrimaryGamepadButton() != GamepadButtons.None
+                            && ((Gamepad)_inputDevice)[(GamepadButton)_controlScheme[flag].GetPrimaryGamepadButton()].isPressed
                         )
                         || (
-                            _controlScheme[flag].GetAltKey() != Key.None
-                            && Keyboard.current[_controlScheme[flag].GetAltKey()].isPressed
+                            _controlScheme[flag].GetAltGamepadButton() != GamepadButtons.None
+                            && ((Gamepad)_inputDevice)[(GamepadButton)_controlScheme[flag].GetAltGamepadButton()].isPressed
                         )
                     )
                     {

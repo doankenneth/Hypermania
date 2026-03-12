@@ -12,116 +12,140 @@ namespace Design.Configs
     public class ControlsConfig : ScriptableObject
     {
         [SerializeField]
-        private EnumArray<InputFlags, Binding> _controlScheme;
+        private GameObject _playerInputPrefab;
+        
+        private InputDevice _P1_input;
+        private InputDevice _P2_input;
+
         [SerializeField]
-        private Boolean _isControllerInput;
+        private EnumArray<InputFlags, Binding> _controlSchemeP1;
+
+        [SerializeField]
+        private EnumArray<InputFlags, Binding> _controlSchemeP2;
 
         // Dictionary for default bindings
         private readonly Dictionary<InputFlags, Binding> _defaultBindings = new()
         {
-            { InputFlags.None, new Binding(Key.None, Key.None, GamepadButtons.None, GamepadButtons.None)},
-            { InputFlags.Up, new Binding(Key.W, Key.None, GamepadButtons.DpadUp, GamepadButtons.None)},
+            { InputFlags.None, new Binding(Key.None, Key.None, GamepadButtons.None, GamepadButtons.None) },
+            { InputFlags.Up, new Binding(Key.W, Key.None, GamepadButtons.DpadUp, GamepadButtons.None) },
             { InputFlags.Down, new Binding(Key.S, Key.None, GamepadButtons.DpadDown, GamepadButtons.None) },
-            { InputFlags.Left, new Binding(Key.A, Key.None, GamepadButtons.DpadLeft, GamepadButtons.None)},
-            { InputFlags.Right, new Binding(Key.D, Key.None, GamepadButtons.DpadRight, GamepadButtons.None)},
+            { InputFlags.Left, new Binding(Key.A, Key.None, GamepadButtons.DpadLeft, GamepadButtons.None) },
+            { InputFlags.Right, new Binding(Key.D, Key.None, GamepadButtons.DpadRight, GamepadButtons.None) },
             { InputFlags.LightAttack, new Binding(Key.J, Key.None, GamepadButtons.West, GamepadButtons.None) },
-            { InputFlags.MediumAttack,new Binding(Key.K, Key.None, GamepadButtons.North, GamepadButtons.None) },
+            { InputFlags.MediumAttack, new Binding(Key.K, Key.None, GamepadButtons.North, GamepadButtons.None) },
             { InputFlags.HeavyAttack, new Binding(Key.L, Key.None, GamepadButtons.South, GamepadButtons.None) },
             { InputFlags.SpecialAttack, new Binding(Key.I, Key.None, GamepadButtons.East, GamepadButtons.None) },
-            { InputFlags.Burst, new Binding(Key.O, Key.None, GamepadButtons.RightShoulder, GamepadButtons.None)},
-            { InputFlags.Mania1, new Binding(Key.D, Key.None, GamepadButtons.DpadRight, GamepadButtons.None)},
-            { InputFlags.Mania2, new Binding(Key.J, Key.None, GamepadButtons.West, GamepadButtons.None)},
-            { InputFlags.Mania3, new Binding(Key.S, Key.None, GamepadButtons.DpadDown, GamepadButtons.None)},
-            { InputFlags.Mania4, new Binding(Key.K, Key.None, GamepadButtons.North, GamepadButtons.None)},
-            { InputFlags.Mania5, new Binding(Key.A, Key.None, GamepadButtons.DpadLeft, GamepadButtons.None)},
-            { InputFlags.Mania6, new Binding(Key.L, Key.None, GamepadButtons.South, GamepadButtons.None)},
+            { InputFlags.Burst, new Binding(Key.O, Key.None, GamepadButtons.RightShoulder, GamepadButtons.None) },
+            { InputFlags.Mania1, new Binding(Key.D, Key.None, GamepadButtons.DpadRight, GamepadButtons.None) },
+            { InputFlags.Mania2, new Binding(Key.J, Key.None, GamepadButtons.West, GamepadButtons.None) },
+            { InputFlags.Mania3, new Binding(Key.S, Key.None, GamepadButtons.DpadDown, GamepadButtons.None) },
+            { InputFlags.Mania4, new Binding(Key.K, Key.None, GamepadButtons.North, GamepadButtons.None) },
+            { InputFlags.Mania5, new Binding(Key.A, Key.None, GamepadButtons.DpadLeft, GamepadButtons.None) },
+            { InputFlags.Mania6, new Binding(Key.L, Key.None, GamepadButtons.South, GamepadButtons.None) },
         };
 
         public ControlsConfig()
         {
             OnEnable();
+
         }
 
         // Sets Default Bindings onEnable to avoid Null Primary bindings
         private void OnEnable()
         {
-            _controlScheme ??= new EnumArray<InputFlags, Binding>();
+            _P1_input = null;
+            _P2_input = null;
+
+            _controlSchemeP1 ??= new EnumArray<InputFlags, Binding>();
+            _controlSchemeP2 ??= new EnumArray<InputFlags, Binding>();
 
             foreach (InputFlags flag in Enum.GetValues(typeof(InputFlags)))
             {
-                if (_controlScheme[flag] == null)
+                if (_controlSchemeP1[flag] == null)
                 {
-                    _controlScheme[flag] = _defaultBindings[flag];
+                    _controlSchemeP1[flag] = _defaultBindings[flag];
+                }
+                if (_controlSchemeP2[flag] == null)
+                {
+                    _controlSchemeP2[flag] = _defaultBindings[flag];
                 }
             }
+
+            
         }
 
         /**
          * Getter to return array of InputFlags and Bindings
          */
-        public EnumArray<InputFlags, Binding> GetControlScheme()
+        public EnumArray<InputFlags, Binding> GetControlSchemeP1()
         {
-            return _controlScheme;
+            return _controlSchemeP1;
+        }
+        public EnumArray<InputFlags, Binding> GetControlSchemeP2()
+        {
+            return _controlSchemeP2;
+        }
+    }
+
+    [Serializable]
+    public class GamepadBindings
+    {
+        [SerializeField]
+        private GamepadButtons _primaryButton;
+
+        [SerializeField]
+        private GamepadButtons _altButton;
+
+        public void SetPrimaryButton(GamepadButtons primaryButton)
+        {
+            _primaryButton = primaryButton;
         }
 
-        public Boolean IsControllerInput() {
-            return _isControllerInput;
+        public void SetAltButton(GamepadButtons altButton)
+        {
+            _altButton = altButton;
+        }
+
+        public GamepadButtons GetPrimaryButton()
+        {
+            return _primaryButton;
+        }
+
+        public GamepadButtons GetAltButton()
+        {
+            return _altButton;
         }
     }
 
-[Serializable]
-public class GamepadBindings {
-    [SerializeField]
-    private GamepadButtons _primaryButton;
-    [SerializeField]
-    private GamepadButtons _altButton;
-    public void SetPrimaryButton(GamepadButtons primaryButton)
+    [Serializable]
+    public class KeyboardBindings
     {
-        _primaryButton = primaryButton;
-    }
+        [SerializeField]
+        private Key _primaryKey;
 
-    public void SetAltButton(GamepadButtons altButton)
-    {
-        _altButton = altButton;
-    }
+        [SerializeField]
+        private Key _altKey;
 
-    public GamepadButtons GetPrimaryButton() { 
-        return _primaryButton;
-    }
+        public void SetPrimaryKey(Key primaryKey)
+        {
+            _primaryKey = primaryKey;
+        }
 
-    public GamepadButtons GetAltButton()
-    {
-        return _altButton;
-    }
-}
+        public void SetAltKey(Key altKey)
+        {
+            _altKey = altKey;
+        }
 
-[Serializable]
-public class KeyboardBindings
-{
-    [SerializeField]
-    private Key _primaryKey;
-    [SerializeField]
-    private Key _altKey;
+        public Key GetPrimaryKey()
+        {
+            return _primaryKey;
+        }
 
-    public void SetPrimaryKey(Key primaryKey)
-    {
-        _primaryKey = primaryKey;
+        public Key GetAltKey()
+        {
+            return _altKey;
+        }
     }
-
-    public void SetAltKey(Key altKey)
-    {
-        _altKey = altKey;
-    }
-    public Key GetPrimaryKey()
-    {
-        return _primaryKey;
-    }
-
-    public Key GetAltKey()
-    {
-        return _altKey;
-    }
-}
 
     [Serializable]
     public class Binding
@@ -145,12 +169,10 @@ public class KeyboardBindings
          */
         public Binding(Key primaryKey, Key altKey, GamepadButtons primaryButton, GamepadButtons altButton)
         {
-
             _keyboardBindings.SetPrimaryKey(primaryKey);
             _keyboardBindings.SetAltKey(altKey);
             _gamepadBindings.SetPrimaryButton(primaryButton);
             _gamepadBindings.SetAltButton(altButton);
-
         }
 
         // Getters to Return keys stored in Binding Structure
@@ -163,10 +185,12 @@ public class KeyboardBindings
         {
             return _keyboardBindings.GetAltKey();
         }
+
         public GamepadButtons GetPrimaryGamepadButton()
         {
             return _gamepadBindings.GetPrimaryButton();
         }
+
         public GamepadButtons GetAltGamepadButton()
         {
             return _gamepadBindings.GetAltButton();
@@ -192,5 +216,5 @@ public enum GamepadButtons
     Start = GamepadButton.Start,
     Select = GamepadButton.Select,
     LeftTrigger = GamepadButton.LeftTrigger,
-    RightTrigger = GamepadButton.RightTrigger
+    RightTrigger = GamepadButton.RightTrigger,
 }
