@@ -412,16 +412,19 @@ namespace Game.Sim
             }
 
             Frame startFrame = frame;
+            int bufferWindow = options.Global.Input.InputBufferWindow;
             if (!Actionable && beatCancelEligible)
             {
                 int frameDiff =
                     options.Global.Audio.ClosestBeat(frame, AudioConfig.BeatSubdivision.QuarterNote) - realFrame;
                 startFrame += frameDiff;
+                // beat cancel inputs must be on the beat
+                bufferWindow = 1;
             }
 
             foreach (((var loc, var input), var state) in _attackDictionary)
             {
-                if (InputH.PressedRecently(input, options.Global.Input.InputBufferWindow) && AttackLocation == loc)
+                if (InputH.PressedRecently(input, bufferWindow) && AttackLocation == loc)
                 {
                     if (
                         AttackLocation == FighterAttackLocation.Standing
@@ -441,10 +444,14 @@ namespace Game.Sim
             }
         }
 
-        public void UpdatePosition(GameOptions options, SVector2 otherFighterPos)
+        public void UpdatePosition(Frame frame, GameOptions options, SVector2 otherFighterPos)
         {
             // Apply gravity if not grounded and not in airdash
-            if (
+            if (options.Players[Index].Character.GetFrameData(State, frame - StateStart).Floating)
+            {
+                Velocity /= options.Global.FloatingFactor;
+            }
+            else if (
                 State != CharacterState.BackAirDash
                 && State != CharacterState.ForwardAirDash
                 && Position.y > options.Global.GroundY
